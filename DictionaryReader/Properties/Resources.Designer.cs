@@ -61,7 +61,7 @@ namespace DictionaryReader.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\LearnKor\DictionaryReader\Content\EngPhoneticsDictionary.txt.
+        ///   Looks up a localized string similar to C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\PersonalProjects\DictionaryReader\Content\EngPhoneticsDictionary.txt.
         /// </summary>
         internal static string FilePathCmuDictionary {
             get {
