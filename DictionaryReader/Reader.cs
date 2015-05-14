@@ -61,6 +61,7 @@ namespace DictionaryReader
 
         /// <summary>
         /// For web application usage
+        /// NOTE: This method is used to integrate with my personal website
         /// </summary>
         /// <param name="userInputWord"></param>
         /// <returns></returns>
