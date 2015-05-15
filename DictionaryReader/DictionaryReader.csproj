@@ -74,6 +74,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\EnglishPhonetics.txt" />
     <Content Include="Content\EngPhoneticsDictionary.txt" />
     <Content Include="ReadMe.txt" />
   </ItemGroup>

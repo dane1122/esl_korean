@@ -6,7 +6,7 @@ In order to achieve the purpose of the project, I had to find out what each lett
 
 ESL KOREAN
 My roommate, Rachel Lo, a Systems-design engineering student at my school, helped me come up with the creative name of this project: ESL Korean.
-ESL Korean can be pronounced in two ways.
+ESL Korean can be interpreted in two ways.
 
 English Second Language Korean, and
 English Sounds Like Korean
