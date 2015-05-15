@@ -78,7 +78,6 @@
     <Content Include="Content\EngPhoneticsDictionary.txt" />
     <Content Include="PrintScreens\esl_korean_example.png" />
     <Content Include="PrintScreens\esl_korean_example2.png" />
-    <Content Include="PrintScreens\esl_korean_example3.png" />
     <Content Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
