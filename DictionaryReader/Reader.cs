@@ -413,6 +413,11 @@ namespace DictionaryReader
                 case "EH1":
                 case "EH0":
                     return "에";
+                case "IH0":
+                case "IH":
+                case "IH1":
+                case "IH2":
+                    return "이";
                 case "AE0":
                 case "AE":
                 case "AE1":
