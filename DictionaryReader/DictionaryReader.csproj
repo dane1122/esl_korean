@@ -74,7 +74,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\EnglishPhonetics.txt" />
+    <Content Include="Content\Consonants.txt" />
+    <Content Include="Content\Vowels.txt" />
     <Content Include="Content\EngPhoneticsDictionary.txt" />
     <Content Include="PrintScreens\example1.png" />
     <Content Include="PrintScreens\example2.png" />

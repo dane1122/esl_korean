@@ -83,6 +83,16 @@ namespace DictionaryReader
 
 
 
+        public static List<string> SplitSyllables(List<string> pronounciation)
+        {
+            return new List<string>();
+            
+        }
+
+
+
+
+
 
         private static List<string> ReturnPronounciation(string wordAndPronoun)
         {
