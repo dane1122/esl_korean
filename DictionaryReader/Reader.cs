@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -105,7 +106,6 @@ namespace DictionaryReader
             
             List<string> syllables = new List<string>();
 
-
             for (int i = 0; i < pronounciations.Count; i++)
             {
                 if (i == pronounciations.Count - 1)
@@ -114,16 +114,14 @@ namespace DictionaryReader
                     break;
                 }
 
+                //Letters to examine
                 var current = pronounciations.ElementAt(i);
                 var next1 = pronounciations.ElementAt(i + 1);
-
                 string next2 = null;
                 if (i + 2 < pronounciations.Count)
-                {
                     next2 = pronounciations.ElementAt(i + 2);
-                }
                 
-                //if the letter is a vowel
+                //if current letter is a vowel
                 if(!consonants.Contains(current))
                 {
                     //next two following characters are consonants, the current letter forms a block with the next letter
@@ -137,7 +135,6 @@ namespace DictionaryReader
                     else if(consonants.Contains(next1) && !consonants.Contains(next2))
                         syllables.Add(current);
 
-                    //TODO: Remove this. For debug purpose
                     else
                         throw new Exception();
                 }
@@ -145,28 +142,32 @@ namespace DictionaryReader
                 //if the letter is a consonant
                 else if(consonants.Contains(current))
                 {
-                    //if only the next character is availabe
+                    //if only the next letter is the last letter, form a block with the next letter
                     if (next2 == null)
                     {
                         syllables.Add(current + ' ' + next1);
                         i = i+1;
                     }
 
-                    //if only the next two characters are availabe
                     else
                     {
+                        //if the next letter is a vowel and the letter after that is a consonant,
+                        //form a group with that the next two letters
                         if (!consonants.Contains(next1) && consonants.Contains(next2))
                         {
                             syllables.Add(current + ' ' + next1 + ' ' + next2);
                             i = i + 2;
                         }
 
+                        //if the next letter is a vowel and the ltter after that is also a vowel
+                        //form a group with only the next letter
                         else if (!consonants.Contains(next1) && !consonants.Contains(next2))
                         {
                             syllables.Add(current + ' ' + next1);
                             i = i+1;
                         }
 
+                        //if the next letter is a consonant, form a group with only the current letter
                         else if(consonants.Contains(next1))
                             syllables.Add(current);
                         
@@ -424,9 +425,8 @@ namespace DictionaryReader
                 case "IY":
                 case "IY0":
                 case "IY2":
-                    return 20;
                 case "IY1":
-                    return 4;
+                    return 20;
                 case "OW":
                 case "OW1":
                 case "OW2":

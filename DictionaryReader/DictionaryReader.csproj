@@ -80,6 +80,12 @@
     <Content Include="PrintScreens\example1.png" />
     <Content Include="PrintScreens\example2.png" />
     <Content Include="PrintScreens\example3.png" />
+    <Content Include="PrintScreens\exampleBanana.png" />
+    <Content Include="PrintScreens\exampleComputer.png" />
+    <Content Include="PrintScreens\exampleCupboard.png" />
+    <Content Include="PrintScreens\exampleElementary.png" />
+    <Content Include="PrintScreens\exampleExplanation.png" />
+    <Content Include="PrintScreens\exampleFlower.png" />
     <Content Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
