@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -54,8 +55,17 @@ namespace DictionaryReader
             myDictionary.EngWord = wordPronounciation[0];
             myDictionary.Pronounciation = ReturnPronounciation(wordPronounciation.Last());
 
+            //TODO: split the pronounciation in syllables
+            var wordSyllables = SplitSyllables(myDictionary.Pronounciation);
+
             //TODO: Get korean pronounciation
-            myDictionary.KorWord = GetKorPronounciation(myDictionary.Pronounciation);
+            var korUnicodes = GetKorUnicode(wordSyllables);
+
+            myDictionary.KorWord = new List<char>();
+            foreach (var unicode in korUnicodes)
+            {
+                myDictionary.KorWord.Add(Convert.ToChar(unicode));
+            }
 
             //Return a dictionary
             return myDictionary;
@@ -69,13 +79,13 @@ namespace DictionaryReader
         /// </summary>
         /// <param name="userInputWord"></param>
         /// <returns></returns>
-        public static Dictionary<List<string>, List<string>> PerformOnWebApp(string userInputWord)
+        public static Dictionary<List<string>, List<char>> PerformOnWebApp(string userInputWord)
         {
             var myDictionary = RunMainLoop(userInputWord);
             if (myDictionary == null)
                 return null;
 
-            var newDictionary = new Dictionary<List<string>, List<string>>();
+            var newDictionary = new Dictionary<List<string>, List<char>>();
             newDictionary.Add(myDictionary.Pronounciation, myDictionary.KorWord);
             return newDictionary;
         }
@@ -83,13 +93,107 @@ namespace DictionaryReader
 
 
 
-        public static List<string> SplitSyllables(List<string> pronounciation)
+        /// <summary>
+        /// Split pronounciation into Korean readable syllables
+        /// </summary>
+        public static List<string> SplitSyllables(List<string> pronounciations)
         {
-            return new List<string>();
+            List<string> consonants = GetConsonantDictionary(Properties.Resources.FilePathConsonants);
+
+            //dictionary of pronounciation and integer indicating whether if it's a vowel or consonant
+            //if vowel int = 0, if consonant int = 1
+            
+            List<string> syllables = new List<string>();
+
+
+            for (int i = 0; i < pronounciations.Count; i++)
+            {
+                if (i == pronounciations.Count - 1)
+                {
+                    syllables.Add(pronounciations.Last());
+                    break;
+                }
+
+                var current = pronounciations.ElementAt(i);
+                var next1 = pronounciations.ElementAt(i + 1);
+
+                string next2 = null;
+                if (i + 2 < pronounciations.Count)
+                {
+                    next2 = pronounciations.ElementAt(i + 2);
+                }
+                
+                //if the letter is a vowel
+                if(!consonants.Contains(current))
+                {
+                    //next two following characters are consonants, the current letter forms a block with the next letter
+                    if (consonants.Contains(next1) && consonants.Contains(next2))
+                    {
+                        syllables.Add(current + ' ' + next1);
+                        i = i + 1;
+                    }
+                    
+                    //only the next character is a consonant, the current letter forms a block on its own
+                    else if(consonants.Contains(next1) && !consonants.Contains(next2))
+                        syllables.Add(current);
+
+                    //TODO: Remove this. For debug purpose
+                    else
+                        throw new Exception();
+                }
+
+                //if the letter is a consonant
+                else if(consonants.Contains(current))
+                {
+                    //if only the next character is availabe
+                    if (next2 == null)
+                    {
+                        syllables.Add(current + ' ' + next1);
+                        i = i+1;
+                    }
+
+                    //if only the next two characters are availabe
+                    else
+                    {
+                        if (!consonants.Contains(next1) && consonants.Contains(next2))
+                        {
+                            syllables.Add(current + ' ' + next1 + ' ' + next2);
+                            i = i + 2;
+                        }
+
+                        else if (!consonants.Contains(next1) && !consonants.Contains(next2))
+                        {
+                            syllables.Add(current + ' ' + next1);
+                            i = i+1;
+                        }
+
+                        else if(consonants.Contains(next1))
+                            syllables.Add(current);
+                        
+                        else
+                            throw new Exception();
+                    }
+                }
+            }
+
+            return syllables;
             
         }
 
-
+        /// <summary>
+        /// Read text file to get consonants or vowels
+        /// </summary>
+        public static List<string> GetConsonantDictionary(string filePath)
+        {
+            List<string> list = new List<string>();
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                int i = 0;
+                while (!reader.EndOfStream)
+                    list.Add(reader.ReadLine());
+            }
+            return list;
+        }
 
 
 
@@ -103,10 +207,6 @@ namespace DictionaryReader
 
 
 
-
-
-
-
         private static string AskForUserInput()
         {
             Console.WriteLine("Enter a word:");
@@ -115,6 +215,9 @@ namespace DictionaryReader
             return userWord;
         }
 
+        /// <summary>
+        /// Ask for user input on console
+        /// </summary>
         private static bool AskTryAgain()
         {
             bool answer = false;
@@ -196,114 +299,124 @@ namespace DictionaryReader
         }
 
 
-        private static List<string> GetKorPronounciation(List<string> pronounciation)
+        private static List<int> GetKorUnicode(List<string> engPronounc)
         {
-            List<string> koreanWord = new List<string>();
+            List<int> korUnicode = new List<int>();
+            List<string> consonants = GetConsonantDictionary(Properties.Resources.FilePathConsonants);
 
-            for(int i = 0; i < pronounciation.Count; i++)
+            foreach (var pronoun in engPronounc)
             {
-                string korLetter;
-                
-                if (i == 0)
-                    korLetter = GetKorLetter(pronounciation.ElementAt(i), true, false, pronounciation);
-                else if (i == pronounciation.Count - 1)
-                    korLetter = GetKorLetter(pronounciation.ElementAt(i), false, true, pronounciation);
-                else
-                    korLetter = GetKorLetter(pronounciation.ElementAt(i), false, false, pronounciation);
+                string[] lettersInPronoun = pronoun.Split(' ');
 
-                koreanWord.Add(korLetter);
+                int initial = 11;
+                int medial = 0;
+                int final = 0;
+
+                //Formular: ((initial*588)+(medial*28)+final) + 44032
+
+                //If only one letter, only the mediator changes
+                if (lettersInPronoun.Length == 1)
+                {
+                    if (consonants.Contains(lettersInPronoun.First()))
+                    {
+                        initial = GetInitialCode(lettersInPronoun.First());
+                        medial = 18;
+                    }
+                    else
+                        medial = GetMedialCode(lettersInPronoun.First());
+                }
+
+                //If two letters, initial adn the mediator change
+                else if (lettersInPronoun.Length == 2)
+                {
+                    //If the first letter is a vowel
+                    //this letter is actually a three component letter
+                    if (!consonants.Contains(lettersInPronoun.First()))
+                    {
+                        initial = 11;
+                        medial = GetMedialCode(lettersInPronoun.First());
+                        final = GetFinalCode(lettersInPronoun.Last());
+                    }
+                    else
+                    {
+                        initial = GetInitialCode(lettersInPronoun.First());
+                        medial = GetMedialCode(lettersInPronoun.Last());
+                    }
+                }
+
+                else
+                {
+                    initial = GetInitialCode(lettersInPronoun.First());
+                    medial = GetMedialCode(lettersInPronoun[1]);
+                    final = GetFinalCode(lettersInPronoun.Last());
+                }
+
+                //If any of the korean character components are equal to -1, throw an exception
+                //as -1 indicates that the mapping was not done correctly
+                if (medial == -1 || initial == -1 || final == -1)
+                    throw new Exception();
+
+                int oneKorCharUnicode = ((initial * 588) + (medial * 28) + final) + 44032;
+                korUnicode.Add(oneKorCharUnicode);
             }
-            return koreanWord;
+
+            return korUnicode;
         }
 
 
 
-
-
-        private static string GetKorLetter(string engLetter, bool isFirstLetter, bool isLastLetter, List<string> fullPronounciation)
+        private static int GetMedialCode(string engPronoun)
         {
-            //TODO: For more accurate romanization, examine the next letter (see if consonant or vowel) to determine the pronounciation of the current letter
+            engPronoun = engPronoun.ToUpper();
 
-            engLetter = engLetter.ToUpper();
-            string korLetter = null;
-
-            if (isFirstLetter)
+            switch (engPronoun)
             {
-                korLetter = DealWithFirstLetter(engLetter);
-                if (korLetter != "?")
-                    return korLetter;
-            }
-
-            else if (isLastLetter)
-            {
-                korLetter = DealWithLastLetter(engLetter);
-                if (korLetter != "?")
-                    return korLetter;
-            }
-
-            switch (engLetter)
-            {
-                case "B":
-                case "V":
-                    return "ㅂ";
-                case "CH":
-                    return "ㅊ";
-                case "D":
-                case "DH":
-                    return "ㄷ";
                 case "AA":
                 case "AA0":
                 case "AA1":
                 case "AA2":
-                    return "ㅏ";
+                    return 0;
                 case "AE":
                 case "AE0":
                 case "AE1":
                 case "AE2":
-                    return "ㅐ";
+                    return 1;
                 case "AH":
                 case "AH1":
                 case "AH2":
                 case "AH0":
-                    return "ㅓ";
+                    return 4;
                 case "AO":
                 case "AO0":
                 case "AO1":
                 case "AO2":
-                    return "ㅗ";
+                    return 8;
                 case "AW":
                 case "AW0":
                 case "AW1":
                 case "AW2":
-                    return "ㅏ우";
+                    return 9;
                 case "AY":
                 case "AY0":
                 case "AY2":
-                    return "ㅣ";
+                    return 20;
                 case "AY1":
-                    return "ㅏ이";
+                    return 1;
                 case "EH":
                 case "EH0":
                 case "EH1":
                 case "EH2":
-                    return "ㅔ";
+                    return 5;
                 case "ER":
                 case "ER0":
                 case "ER1":
                 case "ER2":
-                    return "ㅓㄹ";
+                    return 4;
                 case "EY":
                 case "EY0":
                 case "EY1":
                 case "EY2":
-                    return "ㅔ이";
-                case "F":
-                case "P":
-                    return "ㅍ";
-                case "G":
-                    return "ㄱ";
-                case "HH":
-                    return "ㅎ";
+                    return 5;
                 case "IH":
                 case "IH0":
                 case "IH1":
@@ -311,43 +424,19 @@ namespace DictionaryReader
                 case "IY":
                 case "IY0":
                 case "IY2":
-                    return "ㅣ";
+                    return 20;
                 case "IY1":
-                    return "ㅓ";
-                case "JH":
-                case "Z":
-                case "ZH":
-                    return "ㅈ";
-                case "K":
-                case "Q":
-                    return "ㅋ";
-                case "L":
-                case "R":
-                    return "ㄹ";
-                case "M":
-                    return "ㅁ";
-                case "N":
-                    return "ㄴ";
-                case "NG":
-                case "Y":
-                    return "ㅇ";
+                    return 4;
                 case "OW":
                 case "OW1":
                 case "OW2":
                 case "OW0":
-                    return "ㅗ";
+                    return 8;
                 case "OY":
                 case "OY0":
                 case "OY1":
                 case "OY2":
-                    return "ㅗ이";
-                case "S":
-                case "SH":
-                    return "ㅅ";
-                case "T":
-                    return "ㅌ";
-                case "TH":
-                    return "ㅆ";
+                    return 11;
                 case "UH":
                 case "UH0":
                 case "UH1":
@@ -356,55 +445,121 @@ namespace DictionaryReader
                 case "UW0":
                 case "UW1":
                 case "UW2":
-                    return "ㅜ";
-                case "W":
-                    return "우";
+                    return 13;
+                case "Y":
+                    return 17;
                 default:
-                    return "?";
+                    return -1;
             }
         }
 
 
 
-        private static string DealWithLastLetter(string engLetter)
+        private static int GetInitialCode(string engPronoun)
         {
-            switch (engLetter)
+            //TODO: For more accurate romanization, examine the next letter (see if consonant or vowel) to determine the pronounciation of the current letter
+
+            engPronoun = engPronoun.ToUpper();
+
+            switch (engPronoun)
             {
-                case "SH":
-                    return "쉬";
-                case "DH":
-                case "TH":
-                    return "쓰";
                 case "B":
                 case "V":
-                    return "브";
+                    return 7;
                 case "CH":
-                    return "츠";
+                    return 14;
                 case "D":
-                    return "드";
+                case "DH":
+                    return 3;
                 case "F":
                 case "P":
-                    return "프";
+                    return 17;
                 case "G":
-                    return "그";
-                case "K":
-                case "Q":
-                    return "크";
+                    return 0;
+                case "HH":
+                    return 18;
+                case "JH":
                 case "Z":
                 case "ZH":
-                    return "즈";
-                case "JH":
-                    return "지";
+                    return 12;
+                case "K":
+                case "Q":
+                    return 15;
                 case "L":
-                    return "르";
+                case "R":
+                    return 5;
+                case "M":
+                    return 6;
                 case "N":
-                    return "느";
+                    return 2;
+                case "NG":
+                case "Y":
+                    return 11;
                 case "S":
-                    return "스";
+                case "SH":
+                    return 9;
                 case "T":
-                    return "트";
+                    return 16;
+                case "TH":
+                    return 10;
+                case "W":
+                    return 11;
                 default:
-                    return "?";
+                    return -1;
+            }
+        }
+
+
+
+        private static int GetFinalCode(string engLetter)
+        {
+            var engPronoun = engLetter.ToUpper();
+
+            switch (engPronoun)
+            {
+                case "B":
+                case "V":
+                    return 17;
+                case "CH":
+                    return 23;
+                case "D":
+                case "DH":
+                    return 7;
+                case "F":
+                case "P":
+                    return 26;
+                case "G":
+                    return 1;
+                case "HH":
+                    return 27;
+                case "JH":
+                case "Z":
+                case "ZH":
+                    return 22;
+                case "K":
+                case "Q":
+                    return 24;
+                case "L":
+                case "R":
+                    return 8;
+                case "M":
+                    return 16;
+                case "N":
+                    return 4;
+                case "NG":
+                case "Y":
+                    return 21;
+                case "S":
+                case "SH":
+                    return 19;
+                case "T":
+                    return 25;
+                case "TH":
+                    return 20;
+                case "W":
+                    return 21;
+                default:
+                    return -1;
             }
         }
 

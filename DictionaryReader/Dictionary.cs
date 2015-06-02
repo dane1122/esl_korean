@@ -12,7 +12,7 @@ namespace DictionaryReader
 
 		public List<string> Pronounciation { get; set; }
 
-        public List<string> KorWord { get; set; } 
+        public List<char> KorWord { get; set; } 
 
     }
 }

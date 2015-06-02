@@ -120,4 +120,10 @@
   <data name="FilePathCmuDictionary" xml:space="preserve">
     <value>C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\PersonalProjects\DictionaryReader\Content\EngPhoneticsDictionary.txt</value>
   </data>
+  <data name="FilePathConsonants" xml:space="preserve">
+    <value>C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\PersonalProjects\DictionaryReader\Content\Consonants.txt</value>
+  </data>
+  <data name="FilePathVowels" xml:space="preserve">
+    <value>C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\PersonalProjects\DictionaryReader\Content\Vowels.txt</value>
+  </data>
 </root>

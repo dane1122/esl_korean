@@ -68,5 +68,23 @@ namespace DictionaryReader.Properties {
                 return ResourceManager.GetString("FilePathCmuDictionary", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\PersonalProjects\DictionaryReader\Content\Consonants.txt.
+        /// </summary>
+        internal static string FilePathConsonants {
+            get {
+                return ResourceManager.GetString("FilePathConsonants", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to C:\Users\Dayeong Lee\Documents\Visual Studio 2013\Projects\PersonalProjects\DictionaryReader\Content\Vowels.txt.
+        /// </summary>
+        internal static string FilePathVowels {
+            get {
+                return ResourceManager.GetString("FilePathVowels", resourceCulture);
+            }
+        }
     }
 }
